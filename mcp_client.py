@@ -8,6 +8,7 @@ from typing import Optional
 
 from mcp import ClientSession, StdioServerParameters, types
 from mcp.client.stdio import stdio_client
+from pydantic import AnyUrl
 
 
 class MCPClient:
@@ -53,6 +54,20 @@ class MCPClient:
 
     async def call_tool(self, tool_name: str, tool_input: dict) -> types.CallToolResult:
         return await self.session().call_tool(tool_name, tool_input)
+
+    # Lists direct resources (static URIs) the server exposes.
+    async def list_resources(self) -> list[types.Resource]:
+        result = await self.session().list_resources()
+        return result.resources
+
+    # Lists templated resources (URIs with {params}) the server exposes.
+    async def list_resource_templates(self) -> list[types.ResourceTemplate]:
+        result = await self.session().list_resource_templates()
+        return result.resourceTemplates
+
+    # Reads one resource by URI, e.g. "docs://documents" or "docs://documents/plan.md".
+    async def read_resource(self, uri: str) -> types.ReadResourceResult:
+        return await self.session().read_resource(AnyUrl(uri))
 
     async def cleanup(self):
         await self._exit_stack.aclose()
