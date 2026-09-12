@@ -32,6 +32,17 @@ async def main():
         # Read a templated resource, filling in {doc_id}
         doc_text = await client.read_resource("docs://documents/plan.md")
         print(f"\ndocs://documents/plan.md ->\n{doc_text}")
+
+        # Prompts: reusable message templates the server exposes
+        prompts = await client.list_prompts()
+        print(f"\n{len(prompts)} prompt(s):")
+        for prompt in prompts:
+            print(f"- {prompt.name}: {prompt.description}")
+
+        messages = await client.get_prompt("format", {"doc_id": "plan.md"})
+        print(f"\nformat prompt rendered {len(messages)} message(s):")
+        for message in messages:
+            print(f"[{message.role}] {message.content.text}")
     finally:
         await client.cleanup()
 

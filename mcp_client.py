@@ -82,5 +82,16 @@ class MCPClient:
 
         return resource.text
 
+    # Lists the reusable, parameterized prompt templates the server exposes.
+    async def list_prompts(self) -> list[types.Prompt]:
+        result = await self.session().list_prompts()
+        return result.prompts
+
+    # Fetches one prompt by name with its arguments filled in, returning the
+    # list of messages it renders to (ready to send to Claude).
+    async def get_prompt(self, prompt_name: str, args: dict[str, str]) -> list[types.PromptMessage]:
+        result = await self.session().get_prompt(prompt_name, args)
+        return result.messages
+
     async def cleanup(self):
         await self._exit_stack.aclose()
