@@ -1,10 +1,11 @@
 # The client is responsible for launching the MCP server as a subprocess
 # and talking to it over stdio using the MCP protocol.
 
+import json
 import sys
 from contextlib import AsyncExitStack
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from mcp import ClientSession, StdioServerParameters, types
 from mcp.client.stdio import stdio_client
@@ -66,8 +67,20 @@ class MCPClient:
         return result.resourceTemplates
 
     # Reads one resource by URI, e.g. "docs://documents" or "docs://documents/plan.md".
-    async def read_resource(self, uri: str) -> types.ReadResourceResult:
-        return await self.session().read_resource(AnyUrl(uri))
+
+    # We access our session, call read_resource(), and take the first item
+    # from the contents list (we only ever expect one). The mimeType tells
+    # us how to parse it: application/json gets decoded, everything else
+    # is returned as plain text.
+    async def read_resource(self, uri: str) -> Any:
+        result = await self.session().read_resource(AnyUrl(uri))
+        resource = result.contents[0]
+
+        if isinstance(resource, types.TextResourceContents):
+            if resource.mimeType == "application/json":
+                return json.loads(resource.text)
+
+        return resource.text
 
     async def cleanup(self):
         await self._exit_stack.aclose()

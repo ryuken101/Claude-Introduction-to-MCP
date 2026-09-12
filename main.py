@@ -25,13 +25,13 @@ async def main():
         for template in templates:
             print(f"- {template.uriTemplate}")
 
-        # Read the direct resource (docs://documents -> list of doc ids)
-        doc_list_result = await client.read_resource("docs://documents")
-        print(f"\ndocs://documents ->\n{doc_list_result.contents[0].text}")
+        # Read the direct resource (docs://documents -> list of doc ids, parsed from JSON)
+        doc_list = await client.read_resource("docs://documents")
+        print(f"\ndocs://documents ->\n{doc_list}")
 
         # Read a templated resource, filling in {doc_id}
-        doc_result = await client.read_resource("docs://documents/plan.md")
-        print(f"\ndocs://documents/plan.md ->\n{doc_result.contents[0].text}")
+        doc_text = await client.read_resource("docs://documents/plan.md")
+        print(f"\ndocs://documents/plan.md ->\n{doc_text}")
     finally:
         await client.cleanup()
 
